@@ -1,2 +1,139 @@
 ---
 # tasks file for helloworld
+- name: create source image stream
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: ImageStream
+      metadata:
+        name: hello-openshift-source
+      spec:
+        tags:
+          - from:
+              kind: DockerImage
+              name: openshift/hello-openshift
+            name: latest
+
+- name: create destination image stream
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: ImageStream
+      metadata:
+        name: hello-openshift
+
+- name: create build config
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: BuildConfig
+      metadata:
+        name: hello-build-http
+      spec:
+        output:
+          to:
+            kind: ImageStreamTag
+            name: "hello-openshift:latest"
+        source:
+          dockerfile: |-
+              FROM openshift/hello-openshift
+          type: Dockerfile
+        strategy:
+          dockerStrategy:
+            from:
+              kind: ImageStreamTag
+              name: "hello-openshift-source:latest"
+          type: Docker
+        triggers:
+          - type: ConfigChange
+          - imageChange: {}
+            type: ImageChange
+
+- name: create deployment config
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: DeploymentConfig
+      metadata:
+        name: hello-app-http
+      spec:
+        replicas: 1
+        selector:
+          app: hello-app-http
+          deploymentconfig: hello-app-http
+        strategy: ~
+        template:
+          metadata:
+            labels:
+              app: hello-app-http
+              deploymentconfig: hello-app-http
+          spec:
+            containers:
+              - image: " "
+                name: hello-app-http
+                ports:
+                  - containerPort: 8080
+                    protocol: TCP
+                  - containerPort: 8888
+                    protocol: TCP
+                livenessProbe:
+                  failureThreshold: 3
+                  periodSeconds: 10
+                  successThreshold: 1
+                  tcpSocket:
+                    port: 8080
+                  timeoutSeconds: 1
+                readinessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /
+                    port: 8080
+                    scheme: HTTP
+                  periodSeconds: 10
+                  successThreshold: 1
+                  timeoutSeconds: 1
+        test: false
+        triggers:
+          - type: ConfigChange
+          - imageChangeParams:
+              automatic: true
+              containerNames:
+                - hello-app-http
+              from:
+                kind: ImageStreamTag
+                name: "hello-openshift:latest"
+            type: ImageChange
+
+- name: create service
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: hello-app-http
+      spec:
+        ports:
+          - name: web
+            port: 80
+            protocol: TCP
+            targetPort: 8080
+        selector:
+          app: hello-app-http
+          deploymentconfig: hello-app-http
+
+- name: create route
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Route
+      metadata:
+        name: hello-app-http
+      spec:
+        port:
+          targetPort: web
+        tls:
+          insecureEdgeTerminationPolicy: Allow
+          termination: edge
+        to:
+          kind: Service
+          name: hello-app-http
