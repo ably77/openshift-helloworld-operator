@@ -1,7 +1,7 @@
 apiVersion: hello.world.com/v1alpha1
 kind: Helloworld
 metadata:
-  name: helloworld
+  name: hello-openshift
 spec:
   # Add fields here
   size: 1
