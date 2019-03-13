@@ -3,4 +3,6 @@
   group: hello.world.com
   kind: Helloworld
   role: /opt/ansible/roles/helloworld
-  reconcilePeriod: 1
+  reconcilePeriod: 0
+  manageStatus: false
+  watchDependentResources: false
