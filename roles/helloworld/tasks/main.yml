@@ -1,139 +1,137 @@
 ---
 # tasks file for helloworld
-- name: create source image stream
-  k8s:
-    definition:
-      apiVersion: v1
-      kind: ImageStream
-      metadata:
-        name: hello-openshift-source
-      spec:
-        tags:
-          - from:
-              kind: DockerImage
-              name: openshift/hello-openshift
-            name: latest
-
-- name: create destination image stream
-  k8s:
-    definition:
-      apiVersion: v1
-      kind: ImageStream
-      metadata:
-        name: hello-openshift
-
-- name: create build config
-  k8s:
-    definition:
-      apiVersion: v1
-      kind: BuildConfig
-      metadata:
-        name: hello-build-http
-      spec:
-        output:
-          to:
-            kind: ImageStreamTag
-            name: "hello-openshift:latest"
-        source:
-          dockerfile: |-
-              FROM openshift/hello-openshift
-          type: Dockerfile
-        strategy:
-          dockerStrategy:
-            from:
-              kind: ImageStreamTag
-              name: "hello-openshift-source:latest"
-          type: Docker
-        triggers:
-          - type: ConfigChange
-          - imageChange: {}
-            type: ImageChange
-
 - name: create deployment config
-  k8s:
-    definition:
-      apiVersion: v1
-      kind: DeploymentConfig
-      metadata:
-        name: hello-app-http
-      spec:
-        replicas: 1
-        selector:
-          app: hello-app-http
-          deploymentconfig: hello-app-http
-        strategy: ~
-        template:
-          metadata:
-            labels:
-              app: hello-app-http
-              deploymentconfig: hello-app-http
-          spec:
-            containers:
-              - image: " "
-                name: hello-app-http
-                ports:
-                  - containerPort: 8080
-                    protocol: TCP
-                  - containerPort: 8888
-                    protocol: TCP
-                livenessProbe:
-                  failureThreshold: 3
-                  periodSeconds: 10
-                  successThreshold: 1
-                  tcpSocket:
-                    port: 8080
-                  timeoutSeconds: 1
-                readinessProbe:
-                  failureThreshold: 3
-                  httpGet:
-                    path: /
-                    port: 8080
-                    scheme: HTTP
-                  periodSeconds: 10
-                  successThreshold: 1
-                  timeoutSeconds: 1
-        test: false
-        triggers:
-          - type: ConfigChange
-          - imageChangeParams:
-              automatic: true
-              containerNames:
-                - hello-app-http
-              from:
-                kind: ImageStreamTag
-                name: "hello-openshift:latest"
-            type: ImageChange
-
-- name: create service
   k8s:
     definition:
       apiVersion: v1
       kind: Service
       metadata:
-        name: hello-app-http
+        labels:
+          app: hello-openshift
+        name: hello-openshift
       spec:
         ports:
-          - name: web
-            port: 80
-            protocol: TCP
-            targetPort: 8080
+        - name: 8080-tcp
+          port: 8080
+          protocol: TCP
+          targetPort: 8080
+        - name: 8888-tcp
+          port: 8888
+          protocol: TCP
+          targetPort: 8888
         selector:
-          app: hello-app-http
-          deploymentconfig: hello-app-http
+          deploymentconfig: hello-openshift
+        sessionAffinity: None
+        type: ClusterIP
+      status:
+        loadBalancer: {}
+
+- name: create deployment config
+  k8s:
+    definition:
+      apiVersion: apps.openshift.io/v1
+      kind: DeploymentConfig
+      metadata:
+        generation: 2
+        labels:
+          app: hello-openshift
+        name: '{{ meta.name }}'
+      spec:
+        replicas:  "{{size}}"
+        selector:
+          app: hello-openshift
+          deploymentconfig: hello-openshift
+        strategy:
+          activeDeadlineSeconds: 21600
+          resources: {}
+          rollingParams:
+            intervalSeconds: 1
+            maxSurge: 25%
+            maxUnavailable: 25%
+            timeoutSeconds: 600
+            updatePeriodSeconds: 1
+          type: Rolling
+        template:
+          metadata:
+            labels:
+              app: hello-openshift
+              deploymentconfig: hello-openshift
+          spec:
+            containers:
+            - image: openshift/hello-openshift:latest
+              imagePullPolicy: Always
+              name: hello-openshift
+              ports:
+              - containerPort: 8080
+                protocol: TCP
+              - containerPort: 8888
+                protocol: TCP
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+            dnsPolicy: ClusterFirst
+            restartPolicy: Always
+            schedulerName: default-scheduler
+            securityContext: {}
+            terminationGracePeriodSeconds: 30
+        test: false
+        triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+            - hello-openshift
+            from:
+              kind: ImageStreamTag
+              name: hello-openshift:latest
+              namespace: '{{ meta.namespace }}'
+          type: ImageChange
+      status:
+        availableReplicas: 0
+        latestVersion: 0
+        observedGeneration: 0
+        replicas: 0
+        unavailableReplicas: 0
+        updatedReplicas: 0
+
+- name: create image stream
+  k8s:
+    definition:
+      apiVersion: image.openshift.io/v1
+      kind: ImageStream
+      metadata:
+        generation: 2
+        labels:
+          app: hello-openshift
+        name: hello-openshift
+      spec:
+        lookupPolicy:
+          local: false
+        tags:
+        - from:
+            kind: DockerImage
+            name: openshift/hello-openshift:latest
+          generation: 2
+          importPolicy: {}
+          name: latest
+          referencePolicy:
+            type: Source
+      status:
+        dockerImageRepository: ""
 
 - name: create route
   k8s:
     definition:
-      apiVersion: v1
+      apiVersion: route.openshift.io/v1
       kind: Route
       metadata:
-        name: hello-app-http
+        labels:
+          app: hello-openshift
+        name: hello-openshift
       spec:
         port:
-          targetPort: web
-        tls:
-          insecureEdgeTerminationPolicy: Allow
-          termination: edge
+          targetPort: 8080-tcp
         to:
           kind: Service
-          name: hello-app-http
+          name: hello-openshift
+          weight: 100

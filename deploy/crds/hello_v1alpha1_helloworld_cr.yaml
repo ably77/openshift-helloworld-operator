@@ -1,7 +1,7 @@
 apiVersion: hello.world.com/v1alpha1
 kind: Helloworld
 metadata:
-  name: example-helloworld
+  name: helloworld
 spec:
   # Add fields here
-  size: 3
+  size: 1
