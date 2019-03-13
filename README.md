@@ -1,3 +1,1 @@
 # openshift-helloworld-operator
-
-Test
