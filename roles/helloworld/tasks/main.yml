@@ -9,6 +9,7 @@
         labels:
           app: hello-openshift
         name: hello-openshift
+        namespace: '{{ meta.namespace }}'
       spec:
         ports:
         - name: 8080-tcp
@@ -36,6 +37,7 @@
         labels:
           app: hello-openshift
         name: '{{ meta.name }}'
+        namespace: '{{ meta.namespace }}'
       spec:
         replicas:  "{{size}}"
         selector:
@@ -104,6 +106,7 @@
         labels:
           app: hello-openshift
         name: hello-openshift
+        namespace: '{{ meta.namespace }}'
       spec:
         lookupPolicy:
           local: false
@@ -128,6 +131,7 @@
         labels:
           app: hello-openshift
         name: hello-openshift
+        namespace: '{{ meta.namespace }}'
       spec:
         port:
           targetPort: 8080-tcp
