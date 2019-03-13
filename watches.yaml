@@ -1,0 +1,5 @@
+---
+- version: v1alpha1
+  group: hello.world.com
+  kind: Helloworld
+  role: /opt/ansible/roles/helloworld
