@@ -26,6 +26,7 @@ rules:
   - ""
   - apps
   - apps.openshift.io
+  - image.openshift.io
   resources:
   - apps
   - deploymentconfigs
