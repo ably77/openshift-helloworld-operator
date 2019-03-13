@@ -8,6 +8,8 @@
       kind: DeploymentConfig
       metadata:
         name: '{{ meta.name }}'
+        labels:
+          app: '{{ meta.name }}'
         namespace: '{{ meta.namespace }}'
       spec:
         replicas: "{{size}}"
