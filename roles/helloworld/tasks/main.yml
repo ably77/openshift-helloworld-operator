@@ -3,33 +3,6 @@
 - name: create deployment config
   k8s:
     definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        labels:
-          app: hello-openshift
-        name: hello-openshift
-        namespace: '{{ meta.namespace }}'
-      spec:
-        ports:
-        - name: 8080-tcp
-          port: 8080
-          protocol: TCP
-          targetPort: 8080
-        - name: 8888-tcp
-          port: 8888
-          protocol: TCP
-          targetPort: 8888
-        selector:
-          deploymentconfig: hello-openshift
-        sessionAffinity: None
-        type: ClusterIP
-      status:
-        loadBalancer: {}
-
-- name: create deployment config
-  k8s:
-    definition:
       apiVersion: apps.openshift.io/v1
       kind: DeploymentConfig
       metadata:
@@ -121,6 +94,33 @@
             type: Source
       status:
         dockerImageRepository: ""
+
+- name: create service
+  k8s:
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        labels:
+          app: hello-openshift
+        name: hello-openshift
+        namespace: '{{ meta.namespace }}'
+      spec:
+        ports:
+        - name: 8080-tcp
+          port: 8080
+          protocol: TCP
+          targetPort: 8080
+        - name: 8888-tcp
+          port: 8888
+          protocol: TCP
+          targetPort: 8888
+        selector:
+          deploymentconfig: '{{ meta.name }}'
+        sessionAffinity: None
+        type: ClusterIP
+      status:
+        loadBalancer: {}
 
 - name: create route
   k8s:
