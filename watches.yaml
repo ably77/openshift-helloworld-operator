@@ -5,4 +5,4 @@
   role: /opt/ansible/roles/helloworld
   reconcilePeriod: 0
   manageStatus: true
-  watchDependentResources: false
+  watchDependentResources: true
