@@ -1,73 +1,62 @@
 ---
 # tasks file for helloworld
+
 - name: create deployment config
   k8s:
     definition:
-      apiVersion: apps.openshift.io/v1
+      apiVersion: v1
       kind: DeploymentConfig
       metadata:
-        generation: 2
-        labels:
-          app: hello-openshift
         name: '{{ meta.name }}'
         namespace: '{{ meta.namespace }}'
       spec:
-        replicas:  "{{size}}"
+        replicas: "{{size}}"
         selector:
-          app: hello-openshift
-          deploymentconfig: hello-openshift
-        strategy:
-          activeDeadlineSeconds: 21600
-          resources: {}
-          rollingParams:
-            intervalSeconds: 1
-            maxSurge: 25%
-            maxUnavailable: 25%
-            timeoutSeconds: 600
-            updatePeriodSeconds: 1
-          type: Rolling
+          app: '{{ meta.name }}'
+          deploymentconfig: '{{ meta.name }}'
+        strategy: ~
         template:
           metadata:
             labels:
-              app: hello-openshift
-              deploymentconfig: hello-openshift
+              app: '{{ meta.name }}'
+              deploymentconfig: '{{ meta.name }}'
           spec:
             containers:
-            - image: openshift/hello-openshift:latest
-              imagePullPolicy: Always
-              name: hello-openshift
-              ports:
-              - containerPort: 8080
-                protocol: TCP
-              - containerPort: 8888
-                protocol: TCP
-              resources: {}
-              terminationMessagePath: /dev/termination-log
-              terminationMessagePolicy: File
-            dnsPolicy: ClusterFirst
-            restartPolicy: Always
-            schedulerName: default-scheduler
-            securityContext: {}
-            terminationGracePeriodSeconds: 30
+              - image: " "
+                name: '{{ meta.name }}'
+                ports:
+                  - containerPort: 8080
+                    protocol: TCP
+                  - containerPort: 8888
+                    protocol: TCP
+                livenessProbe:
+                  failureThreshold: 3
+                  periodSeconds: 10
+                  successThreshold: 1
+                  tcpSocket:
+                    port: 8080
+                  timeoutSeconds: 1
+                readinessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /
+                    port: 8080
+                    scheme: HTTP
+                  periodSeconds: 10
+                  successThreshold: 1
+                  timeoutSeconds: 1
         test: false
         triggers:
-        - type: ConfigChange
-        - imageChangeParams:
-            automatic: true
-            containerNames:
-            - hello-openshift
-            from:
-              kind: ImageStreamTag
-              name: hello-openshift:latest
-              namespace: '{{ meta.namespace }}'
-          type: ImageChange
-      status:
-        availableReplicas: 0
-        latestVersion: 0
-        observedGeneration: 0
-        replicas: 0
-        unavailableReplicas: 0
-        updatedReplicas: 0
+          - type: ConfigChange
+          - imageChangeParams:
+              automatic: true
+              containerNames:
+                - '{{ meta.name }}'
+              from:
+                kind: ImageStreamTag
+                name: "hello-openshift:latest"
+                namespace: '{{ meta.namespace }}'
+            type: ImageChange
 
 - name: create image stream
   k8s:
@@ -77,8 +66,8 @@
       metadata:
         generation: 2
         labels:
-          app: hello-openshift
-        name: hello-openshift
+          app: '{{ meta.name }}'
+        name: '{{ meta.name }}'
         namespace: '{{ meta.namespace }}'
       spec:
         lookupPolicy:
@@ -102,8 +91,8 @@
       kind: Service
       metadata:
         labels:
-          app: hello-openshift
-        name: hello-openshift
+          app: '{{ meta.name }}'
+        name: '{{ meta.name }}'
         namespace: '{{ meta.namespace }}'
       spec:
         ports:
@@ -129,13 +118,13 @@
       kind: Route
       metadata:
         labels:
-          app: hello-openshift
-        name: hello-openshift
+          app: '{{ meta.name }}'
+        name: '{{ meta.name }}'
         namespace: '{{ meta.namespace }}'
       spec:
         port:
           targetPort: 8080-tcp
         to:
           kind: Service
-          name: hello-openshift
+          name: '{{ meta.name }}'
           weight: 100
