@@ -23,12 +23,18 @@ rules:
   verbs:
   - get
 - apiGroups:
+  - ""
   - apps
+  - apps.openshift.io
   resources:
+  - apps
+  - deploymentconfigs
   - deployments
   - daemonsets
   - replicasets
   - statefulsets
+  - routes
+  - services
   verbs:
   - '*'
 - apiGroups:
