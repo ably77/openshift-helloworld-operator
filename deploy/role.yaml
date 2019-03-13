@@ -33,6 +33,7 @@ rules:
   - daemonsets
   - replicasets
   - statefulsets
+  - imagestreams
   - routes
   - services
   verbs:
