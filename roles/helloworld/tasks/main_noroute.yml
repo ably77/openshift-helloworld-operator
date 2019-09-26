@@ -1,0 +1,87 @@
+---
+# tasks file for helloworld
+
+- name: create deployment config
+  k8s:
+    definition:
+      apiVersion: apps.openshift.io/v1
+      kind: DeploymentConfig
+      metadata:
+        name: '{{ meta.name }}'
+        labels:
+          app: '{{ meta.name }}'
+        namespace: '{{ meta.namespace }}'
+      spec:
+        replicas: "{{size}}"
+        selector:
+          app: '{{ meta.name }}'
+          deploymentconfig: '{{ meta.name }}'
+        strategy: ~
+        template:
+          metadata:
+            labels:
+              app: '{{ meta.name }}'
+              deploymentconfig: '{{ meta.name }}'
+          spec:
+            containers:
+              - image: " "
+                name: '{{ meta.name }}'
+                ports:
+                  - containerPort: 8080
+                    protocol: TCP
+                  - containerPort: 8888
+                    protocol: TCP
+                livenessProbe:
+                  failureThreshold: 3
+                  periodSeconds: 10
+                  successThreshold: 1
+                  tcpSocket:
+                    port: 8080
+                  timeoutSeconds: 1
+                readinessProbe:
+                  failureThreshold: 3
+                  httpGet:
+                    path: /
+                    port: 8080
+                    scheme: HTTP
+                  periodSeconds: 10
+                  successThreshold: 1
+                  timeoutSeconds: 1
+        test: false
+        triggers:
+          - type: ConfigChange
+          - imageChangeParams:
+              automatic: true
+              containerNames:
+                - '{{ meta.name }}'
+              from:
+                kind: ImageStreamTag
+                name: "hello-openshift:latest"
+                namespace: '{{ meta.namespace }}'
+            type: ImageChange
+
+- name: create image stream
+  k8s:
+    definition:
+      apiVersion: image.openshift.io/v1
+      kind: ImageStream
+      metadata:
+        generation: 2
+        labels:
+          app: '{{ meta.name }}'
+        name: '{{ meta.name }}'
+        namespace: '{{ meta.namespace }}'
+      spec:
+        lookupPolicy:
+          local: false
+        tags:
+        - from:
+            kind: DockerImage
+            name: openshift/hello-openshift:latest
+          generation: 2
+          importPolicy: {}
+          name: latest
+          referencePolicy:
+            type: Source
+      status:
+        dockerImageRepository: ""
