@@ -27,6 +27,7 @@ spec:
           image: quay.io/ally/openshift-helloworld-operator:v0.1
           imagePullPolicy: Always
 <...>
+```
 
 ## Install the Operator
 ```
