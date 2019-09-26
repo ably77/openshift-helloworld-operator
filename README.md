@@ -27,3 +27,18 @@ spec:
           image: quay.io/ally/openshift-helloworld-operator:v0.1
           imagePullPolicy: Always
 <...>
+
+## Install the Operator
+```
+./runme.sh
+```
+
+### Watch your Installation
+```
+oc get pods -w
+```
+
+## Uninstalling
+```
+oc delete project helloworld-operator
+```
