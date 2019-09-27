@@ -34,9 +34,20 @@ spec:
 ./runme.sh
 ```
 
-### Watch your Installation
+## Watch your Installation
 ```
 oc get pods -w
+```
+
+## Operator Functions
+
+To manipulate your CR
+```
+oc edit Helloworld/hello-openshift
+
+or
+
+oc edit -f deploy/crds/hello_v1alpha1_helloworld_cr.yaml
 ```
 
 ## Uninstalling
