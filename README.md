@@ -50,6 +50,12 @@ or
 oc edit -f deploy/crds/hello_v1alpha1_helloworld_cr.yaml
 ```
 
+### Variables to Manipulate
+```
+size: # of hello-world replicas in the deployment
+state: present/absent
+```
+
 ## Uninstalling
 ```
 oc delete project helloworld-operator

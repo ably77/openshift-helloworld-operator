@@ -16,7 +16,7 @@ spec:
       containers:
         - name: helloworld-operator
           # Replace this with the built image name
-          image: quay.io/ally/openshift-helloworld-operator:v0.17
+          image: quay.io/ally/openshift-helloworld-operator:v0.25
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE

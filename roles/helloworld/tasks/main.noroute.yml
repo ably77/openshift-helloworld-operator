@@ -3,6 +3,7 @@
 
 - name: create deployment config
   k8s:
+    state: "{{ state }}"
     definition:
       apiVersion: apps.openshift.io/v1
       kind: DeploymentConfig

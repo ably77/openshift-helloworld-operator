@@ -3,6 +3,7 @@
 
 - name: create deployment config
   k8s:
+    state: "{{ state }}"
     definition:
       apiVersion: apps.openshift.io/v1
       kind: DeploymentConfig
@@ -88,6 +89,7 @@
 
 - name: create service
   k8s:
+    state: "{{ state }}"
     definition:
       apiVersion: v1
       kind: Service
@@ -115,6 +117,7 @@
 
 - name: create route
   k8s:
+    state: "{{ state }}"
     definition:
       apiVersion: route.openshift.io/v1
       kind: Route
