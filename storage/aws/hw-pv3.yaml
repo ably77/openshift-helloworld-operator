@@ -3,8 +3,9 @@ kind: PersistentVolume
 metadata:
   name: helloworld-pv3
   labels:
-    type: local
+    type: gp2
 spec:
+  storageClassName: gp2
   capacity:
     storage: 3Gi
   accessModes:
