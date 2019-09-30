@@ -9,9 +9,6 @@ oc create -f deploy/operator.yaml \
           -f deploy/role.yaml \
           -f deploy/service_account.yaml
 
-oc create -f deploy/role_user.yaml
-oc adm policy add-cluster-role-to-user helloworld-operator-execute kubeadmin
-
 sleep 45
 
 oc create -n helloworld-operator -f deploy/crds/cr1.yaml

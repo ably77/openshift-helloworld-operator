@@ -1,5 +1,8 @@
 # openshift-helloworld-operator
 
+## Prerequisites
+- User with Cluster Admin privileges
+
 ## Modify ansible playbooks
 Once completed with modifying any /roles/helloworld/tasks move on to building your operator
 
