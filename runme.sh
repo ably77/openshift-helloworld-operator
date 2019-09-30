@@ -11,7 +11,8 @@ oc create -f deploy/operator.yaml \
 
 ./check-pod-status.sh helloworld-operator helloworld-operator
 
-oc create -f storage
+oc create -f storage/cluster
+oc create -f storage/pvc
 
 oc create -n helloworld-operator -f deploy/crds/cr1.yaml
 oc create -n helloworld-operator -f deploy/crds/cr2.yaml
