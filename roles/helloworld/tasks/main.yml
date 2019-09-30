@@ -1,37 +1,29 @@
 ---
-# tasks file for helloworld
-
-- name: create deployment config
+-
   k8s:
-    state: "{{ state }}"
     definition:
       apiVersion: apps.openshift.io/v1
       kind: DeploymentConfig
       metadata:
-        name: '{{ meta.name }}'
         labels:
-          app: '{{ meta.name }}'
-        namespace: '{{ meta.namespace }}'
+          app: "{{ meta.name }}"
+        name: "{{ meta.name }}"
+        namespace: "{{ meta.namespace }}"
       spec:
         replicas: "{{size}}"
         selector:
-          app: '{{ meta.name }}'
-          deploymentconfig: '{{ meta.name }}'
+          app: "{{ meta.name }}"
+          deploymentconfig: "{{ meta.name }}"
         strategy: ~
         template:
           metadata:
             labels:
-              app: '{{ meta.name }}'
-              deploymentconfig: '{{ meta.name }}'
+              app: "{{ meta.name }}"
+              deploymentconfig: "{{ meta.name }}"
           spec:
             containers:
-              - image: " "
-                name: '{{ meta.name }}'
-                ports:
-                  - containerPort: 8080
-                    protocol: TCP
-                  - containerPort: 8888
-                    protocol: TCP
+              -
+                image: " "
                 livenessProbe:
                   failureThreshold: 3
                   periodSeconds: 10
@@ -39,6 +31,14 @@
                   tcpSocket:
                     port: 8080
                   timeoutSeconds: 1
+                name: "{{ meta.name }}"
+                ports:
+                  -
+                    containerPort: 8080
+                    protocol: TCP
+                  -
+                    containerPort: 8888
+                    protocol: TCP
                 readinessProbe:
                   failureThreshold: 3
                   httpGet:
@@ -48,20 +48,28 @@
                   periodSeconds: 10
                   successThreshold: 1
                   timeoutSeconds: 1
+            persistentVolumeClaim:
+              claimName: "{{claim}}"
+            volumes:
+              -
+                name: helloworld-pv
         test: false
         triggers:
-          - type: ConfigChange
-          - imageChangeParams:
+          -
+            type: ConfigChange
+          -
+            imageChangeParams:
               automatic: true
               containerNames:
-                - '{{ meta.name }}'
+                - "{{ meta.name }}"
               from:
                 kind: ImageStreamTag
                 name: "hello-openshift:latest"
-                namespace: '{{ meta.namespace }}'
+                namespace: "{{ meta.namespace }}"
             type: ImageChange
-
-- name: create image stream
+    state: "{{ state }}"
+  name: "create deployment config"
+-
   k8s:
     definition:
       apiVersion: image.openshift.io/v1
@@ -69,67 +77,71 @@
       metadata:
         generation: 2
         labels:
-          app: '{{ meta.name }}'
-        name: '{{ meta.name }}'
-        namespace: '{{ meta.namespace }}'
+          app: "{{ meta.name }}"
+        name: "{{ meta.name }}"
+        namespace: "{{ meta.namespace }}"
       spec:
         lookupPolicy:
           local: false
         tags:
-        - from:
-            kind: DockerImage
-            name: openshift/hello-openshift:latest
-          generation: 2
-          importPolicy: {}
-          name: latest
-          referencePolicy:
-            type: Source
+          -
+            from:
+              kind: DockerImage
+              name: "openshift/hello-openshift:latest"
+            generation: 2
+            importPolicy: {}
+            name: latest
+            referencePolicy:
+              type: Source
       status:
         dockerImageRepository: ""
-
-- name: create service
+  name: "create image stream"
+-
   k8s:
-    state: "{{ state }}"
     definition:
       apiVersion: v1
       kind: Service
       metadata:
         labels:
-          app: '{{ meta.name }}'
-        name: '{{ meta.name }}'
-        namespace: '{{ meta.namespace }}'
+          app: "{{ meta.name }}"
+        name: "{{ meta.name }}"
+        namespace: "{{ meta.namespace }}"
       spec:
         ports:
-        - name: 8080-tcp
-          port: 8080
-          protocol: TCP
-          targetPort: 8080
-        - name: 8888-tcp
-          port: 8888
-          protocol: TCP
-          targetPort: 8888
+          -
+            name: 8080-tcp
+            port: 8080
+            protocol: TCP
+            targetPort: 8080
+          -
+            name: 8888-tcp
+            port: 8888
+            protocol: TCP
+            targetPort: 8888
         selector:
-          deploymentconfig: '{{ meta.name }}'
+          deploymentconfig: "{{ meta.name }}"
         sessionAffinity: None
         type: ClusterIP
       status:
         loadBalancer: {}
-
-- name: create route
-  k8s:
     state: "{{ state }}"
+  name: "create service"
+-
+  k8s:
     definition:
       apiVersion: route.openshift.io/v1
       kind: Route
       metadata:
         labels:
-          app: '{{ meta.name }}'
-        name: '{{ meta.name }}'
-        namespace: '{{ meta.namespace }}'
+          app: "{{ meta.name }}"
+        name: "{{ meta.name }}"
+        namespace: "{{ meta.namespace }}"
       spec:
         port:
           targetPort: 8080-tcp
         to:
           kind: Service
-          name: '{{ meta.name }}'
+          name: "{{ meta.name }}"
           weight: 100
+    state: "{{ state }}"
+  name: "create route"

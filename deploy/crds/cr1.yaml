@@ -6,6 +6,7 @@ spec:
   # Add fields here
   size: 1
   state: present
+  claim: helloworld-pv1
   # Sample definition below where some 'extra vars' are passed via the spec
   # Passing 'extra vars' through the CR allows for customization of Ansible logic based on the contents of each CR instance.
   #key: "value"
