@@ -1,7 +1,7 @@
 apiVersion: hello.world.com/v1alpha1
 kind: Helloworld
 metadata:
-  name: helloworld-drainer
+  name: helloworld-app2
 spec:
   # Add fields here
   size: 1

@@ -1,5 +1,8 @@
 #!/bin/bash
 
 oc delete project helloworld-operator
-oc delete -f deploy/role_binding.yaml
-oc delete -f deploy/role.yaml
+
+oc delete -f deploy/role_binding.yaml \
+          -f deploy/role.yaml \
+          -f deploy/crds/hello_v1alpha1_helloworld_crd.yaml
+
