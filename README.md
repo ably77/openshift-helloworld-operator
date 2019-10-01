@@ -57,6 +57,7 @@ oc edit -f deploy/crds/hello_v1alpha1_helloworld_cr.yaml
 ```
 size: # of hello-world replicas in the deployment
 state: present/absent
+claim: Name of persistentVolume claim to attach to
 ```
 
 ## Uninstalling
